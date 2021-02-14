@@ -27,7 +27,7 @@ Screenshots
 - Warehouse Update
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/warehosue_update__01.png)
 - Warehouse Delete
-![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/warehosue_delete__01.png)
+![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/warehouse_delete__01.png)
 - Movement View 1
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/movement_view__01.png)
 - Movement View 2
