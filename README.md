@@ -11,4 +11,4 @@ The application contains follwing APIs
 
 Steps to RUN
 - Install dependencies
-- RUN python wsgi.py
+- RUN python /backend/wsgi.py
