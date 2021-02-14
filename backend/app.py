@@ -278,7 +278,7 @@ app.add_url_rule('/movements',view_func=MovementView.as_view('movements'))
 app.add_url_rule('/movements/<string:id>/update',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
 app.add_url_rule('/movements/<string:id>/delete',view_func=MovementDestroyView.as_view('/MovementsDelete'))
 app.add_url_rule('/report',view_func=ReportView.as_view('report'))
-app.run(debug=True, port=8888)
+#app.run(debug=True, port=8888)
 
 
 
