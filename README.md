@@ -15,4 +15,4 @@ Steps to RUN
 
 Screenshots
 - Home Page
-![image] (https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/home__01.png)
+![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/home__01.png)
