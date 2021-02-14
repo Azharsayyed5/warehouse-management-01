@@ -1,0 +1,35 @@
+{%extends 'base.html'%}
+
+{% block title %} Movement report {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Movement Summary
+    </h2>
+    {%if report |length < 1%}
+    <h4>No Report found please start by making movements</h4>
+    {% else %}
+    <table class="table mt-3">
+        <thead class="thead-dark ">
+            <th>
+                Product
+            </th>
+            <th>
+                Warehouse
+            </th>
+            <th>
+                Quantity
+            </th>
+        </thead>
+        {% for rep in report  %}
+        <tr>
+            <td>{{rep.product}}</td>
+            <td>{{rep.location}}</td>
+            <td>{{rep.quantity}}</td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </table>
+</div>
+{% endblock %}

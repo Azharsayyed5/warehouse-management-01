@@ -1,0 +1,19 @@
+{% extends 'base.html'%}
+
+{% block title %} Delete Movement {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Delete Movement
+    </h2>
+    <form action="/movements/{{movement.movement_id}}/delete" method="post">
+        <div class="form-group">
+            <label for="movement-name">
+                Are you sure on deleting the movement ?
+            </label>
+            <input type="submit" class="form-control btn-danger mt-2" value="Delete Movement">
+        </div>
+    </form>
+</div>
+{% endblock %}

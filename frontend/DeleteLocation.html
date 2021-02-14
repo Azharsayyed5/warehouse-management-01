@@ -1,0 +1,19 @@
+{% extends 'base.html'%}
+
+{% block title %} Delete Warehouse {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Delete Warehouse
+    </h2>
+    <form action="/locations/{{location.id}}/delete" method="post">
+        <div class="form-group">
+            <label for="location-name">
+                Are you sure on deleting the warehouse ?
+            </label>
+            <input type="submit" class="form-control btn-danger mt-3" value="Delete location">
+        </div>
+    </form>
+</div>
+{% endblock %}

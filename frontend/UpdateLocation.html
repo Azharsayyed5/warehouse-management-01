@@ -1,0 +1,20 @@
+{% extends 'base.html'%}
+
+{% block title %} Update Warehouse {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Update Warehouse
+    </h2>
+    <form action="/locations/{{location.id}}/update" method="post">
+        <div class="form-group">
+            <label for="location-name">
+                Warehouse Name
+            </label>
+            <input type="text" class="form-control" name="location-name" id="location-name" value="{{location.name}}">
+            <input type="submit" class="form-control btn-warning mt-3" value="Update Warehouse">
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{%extends 'base.html'%}
+
+{% block title %} Locations {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Warehouse Management
+    </h2>
+    <form action="/locations" method="post">
+        <div class="form-group">
+            <label for="location-name">
+                Location Name
+            </label>
+            <input type="text" class="form-control" name="location-name" id="location-name">
+            <input type="submit" class="form-control btn btn-success mt-2" value="Add location">
+        </div>
+    </form>
+    {%if locations|length < 1%}
+    <h4>No locations found please start by adding locations above</h4>
+    {% else %}
+    <table class="table">
+        <thead class="thead-dark">
+            <th>
+                WAREHOUSE
+            </th>
+            <th>
+                ACTIONS
+            </th>
+        </thead>
+        {% for location in locations %}
+        <tr>
+            <td>{{location.name}}</td>
+            <td>
+                <a href="/locations/{{location.id}}/update" class="btn btn-warning">Update</a>
+                <a href="/locations/{{location.id}}/delete" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </table>
+</div>
+{% endblock %}

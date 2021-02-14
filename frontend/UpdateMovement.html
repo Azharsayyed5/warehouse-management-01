@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %} Movements {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Movements
+    </h2>
+    <form action="/movements" method="post">
+        <div class="row mt-3">
+            <div class="form-group col">
+                <label for="product">Product</label>
+                <select name="product" id="product" class="form-control">
+                    {% for product in products %}
+                    <option value="{{ product.id }}">{{product.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col">
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" class="form-control" min="1">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="form-group col">
+                <label for="source-location">From location:</label>
+                <select name="source-location" id="source-location" class="form-control">
+                    <option value="none">None</option>
+                    {% for location in locations %}
+                    <option value="{{location.id}}">{{location.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col">
+                <label for="destination-location">To location:</label>
+                <select name="destination-location" id="destination-location" class="form-control">
+                    <option value="none">None</option>
+                    {% for location in locations %}
+                    <option value="{{location.id}}">{{location.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <input type="submit" value="Update movement" class="form-control btn btn-primary">
+    </form>
+</div>
+{%endblock%}

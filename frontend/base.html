@@ -1,0 +1,38 @@
+<!-- index.html -->
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"
+</head>
+<body>
+    <div class="flex justify-between items-center py-4 bg-purple-900">
+        <div class="flex-shrink-0 ml-10 cursor-pointer">
+          <i class="fas fa-drafting-compass fa-2x text-orange-500"></i>
+          <span class="ml-1 text-3xl text-blue-100 font-semibold">Warehouse management</span>
+        </div>
+        <i class="fas fa-bars fa-2x visible md:invisible mr-10 md:mr-0 text-blue-150 cursor-pointer"></i>
+        <ul class="hidden md:flex overflow-x-hidden mr-8 font-semibold">
+          <li class="mr-6 p-1 border-b-2 border-orange-500">
+            <a class="text-white hover:text-blue-300" href="/products">Products</a>
+          </li>
+          <li class="mr-6 p-1 border-b-2 border-orange-500">
+            <a class="text-white hover:text-blue-300" href="/locations">Locations</a>
+          </li>
+          <li class="mr-6 p-1 border-b-2 border-orange-500">
+            <a class="text-white hover:text-blue-300" href="/movements">Movements</a>
+          </li>
+          <li class="mr-6 p-1 border-b-2 border-orange-500">
+            <a class="text-white hover:text-blue-300" href="/report">Report</a>
+          </li>
+          <li class="mr-6 p-1 border-b-2 border-orange-500">
+            <a class="text-white hover:text-blue-300" href="#">Contacts</a>
+          </li>
+        </ul>
+      </div>
+
+      {% block body %} {% endblock %}
+      
+</body>
+</html>

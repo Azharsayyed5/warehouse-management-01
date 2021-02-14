@@ -1,0 +1,19 @@
+{% extends 'base.html'%}
+
+{% block title %} Delete Products {% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="text-center mt-3">
+        Delete product
+    </h2>
+    <form action="/products/{{product.id}}/delete" method="post">
+        <div class="form-group">
+            <label for="product-name">
+                Are you sure on deleting the item ?
+            </label>
+            <input type="submit" class="form-control btn-danger mt-2" value="Delete product">
+        </div>
+    </form>
+</div>
+{% endblock %}
