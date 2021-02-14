@@ -8,3 +8,7 @@ The application contains follwing APIs
 - Add/Edit//Delete/View Location
 - Add/Edit//Delete/View ProductMovement
 - View Report
+
+Steps to RUN
+- Install dependencies
+- RUN python wsgi.py
