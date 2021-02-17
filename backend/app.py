@@ -3,8 +3,10 @@ from flask import Flask,request,redirect,render_template
 from flask.views import MethodView
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.functions import func
+from sqlalchemy.orm import aliased
 from datetime import datetime
 import uuid
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__, template_folder="../frontend/")
 
@@ -51,35 +53,29 @@ class ProductView(MethodView):
 
 
 class ProductUpdateView(MethodView):
-
-    def get(self, id=None):
+    
+    def get(self, id=None,  method=None):
         product_detail = Product.query.get_or_404(id)
-        return render_template(app.config['UpdateProductTemplate'], product=product_detail)
+        if method == 'update':
+            return render_template(app.config['UpdateProductTemplate'], product=product_detail)
+        elif method == 'delete':
+            return render_template(app.config['DeleteProductTemplate'] , product=product_detail)
+        else:
+            return 'Wrong method'
 
-    def post(self, id=None):
+    def post(self, id=None, method=None):
         try:
             product = Product.query.get_or_404(id)
-            product.name = request.form['product-name']
-            database.session.commit()   
-        except:
-            pass
-        finally:
-            return redirect('/products')
-
-
-class ProductDestroyView(MethodView):
-
-    def get(self, id=None):
-        product = Product.query.get_or_404(id)
-        return render_template(app.config['DeleteProductTemplate'] , product=product)
-
-    def post(self, id=None):
-        try:
-            product = Product.query.get_or_404(id)
-            product.id = id
-            if product:
-                database.session.delete(product)
+            if method == 'update':
+                product.name = request.form['product-name']
                 database.session.commit()   
+            elif method == 'delete':
+                product.id = id
+                if product:
+                    database.session.delete(product)
+                    database.session.commit() 
+            else:
+                return 'Wrong method'
         except:
             pass
         finally:
@@ -104,34 +100,30 @@ class LocationsView(MethodView):
 
 class LocationUpdateView(MethodView):
 
-    def get(self, id=None):
+    def get(self, id=None, method=None):
         location_detail = Location.query.get_or_404(id)
-        return render_template(app.config['UpdateLocationTemplate'], location=location_detail)
+        if method == 'update':
+            return render_template(app.config['UpdateLocationTemplate'], location=location_detail)
+        elif method == 'delete':
+            return render_template(app.config['DeleteLocationTemplate'], location=location_detail)
+        else:
+            return 'Wrong method'
+        
 
-    def post(self, id=None):
+    def post(self, id=None, method=None):
         try:
             location = Location.query.get_or_404(id)
-            if location:
-                location.name = request.form['location-name']
-                database.session.commit()
-        except:
-            pass
-        finally:
-            return redirect('/locations')
-
-class locationDestroyView(MethodView):
-
-    def get(self, id=None):
-        location = Location.query.get_or_404(id)
-        return render_template(app.config['DeleteLocationTemplate'], location=location)
-
-    def post(self, id=None):
-        try:
-            location = Location.query.get_or_404(id)
-            location.id = id
-            if location:
-                database.session.delete(location)
-                database.session.commit()
+            if method == 'update':
+                if location:
+                    location.name = request.form['location-name']
+                    database.session.commit()
+            elif method == 'delete':
+                location.id = id
+                if location:
+                    database.session.delete(location)
+                    database.session.commit()
+            else:
+                return 'Wrong method'
         except:
             pass
         finally:
@@ -140,12 +132,31 @@ class locationDestroyView(MethodView):
 class MovementView(MethodView):
     
     def get(self):
-        product_list, locations_list, movements_list = Product.query.all(), Location.query.all(),  Movement.query.all()
+
+        """
+            SELECT p.name as product_name, l2.name as source_location, l.name as destination_location,  m.quantity
+            FROM movement m
+            LEFT JOIN product p ON m.product_id = p.id
+            LEFT JOIN location l ON m.destination_location_id  = l.id 
+            LEFT JOIN location l2 ON m.source_location_id  = l2.id OR (m.source_location_id IS NULL)
+            ORDER BY m.timestamp desc;
+        """
+        Location1 = aliased(Location)
+        Location2 = aliased(Location)
+
+        data = Movement.query.join(
+            Product, Movement.product_id == Product.id, isouter=True).join(
+                Location1, Movement.destination_location_id  == Location1.id, isouter=True).join(
+                Location2, Movement.source_location_id  == Location2.id, isouter=True).add_columns(
+                        Movement.movement_id.label('movement_id'),
+                        Product.name.label('product'), 
+                        Location2.name.label('source_location'),  
+                        Location1.name.label('destination_location'), 
+                        Movement.quantity.label('quantity')
+                        ).all()
         return render_template(
                 app.config['ViewMovementsTemplate'], 
-                products=product_list,
-                locations=locations_list,
-                movements=movements_list
+                data=data
             )
 
     def post(self):
@@ -167,66 +178,66 @@ class MovementView(MethodView):
 
 class MovementUpdateView(MethodView):
     
-    def get(self, id=None):
-        product_list, locations_list, movements_list = Product.query.all(), Location.query.all(),  Movement.query.all()
-        return render_template(
-                app.config['UpdateMovementTemplate'], 
-                products=product_list,
-                locations=locations_list,
-                movements=movements_list
-            )
+    def get(self, movement_id=None, method=None):
+        if method == 'update':
+            product_list, locations_list, movements_list = Product.query.all(), Location.query.all(),  Movement.query.all()
+            return render_template(
+                    app.config['UpdateMovementTemplate'], 
+                    products=product_list,
+                    locations=locations_list,
+                    movements=movements_list
+                )
+        elif method == 'delete':
+            movement = Movement.query.get_or_404(movement_id)
+            return render_template(app.config['DeleteMovementTemplate'], movement=movement)
+        else:
+            return "wrong method"
 
-    def post(self, id=None):
+    def post(self, movement_id=None, method=None):
         try:
-            Movement = Movement.query.get_or_404(id)
-            if Movement:
-                Movement.destination_location = request.form['destination-location']
-                Movement.source_location = request.form['source-location']
-                Movement.product = request.form['product']
-                Movement.quantity = request.form['quantity']
-                database.session.commit()
+            if method == 'update':
+                Movement = Movement.query.get_or_404(movement_id)
+                if Movement:
+                    Movement.destination_location = request.form['destination-location']
+                    Movement.source_location = request.form['source-location']
+                    Movement.product = request.form['product']
+                    Movement.quantity = request.form['quantity']
+                    database.session.commit()
+            elif method == 'delete':
+                movement = Movement.query.get_or_404(movement_id)
+                movement.movement_id = movement_id
+                if movement:
+                    database.session.delete(movement)
+                    database.session.commit()
+            else:
+                return "wrong method"
         except:
             pass
         finally:
             return redirect('/movements')
-
-
-class MovementDestroyView(MethodView):
-    
-
-    def get(self, id=None):
-        movement = Movement.query.get_or_404(id)
-        return render_template(app.config['DeleteMovementTemplate'], movement=movement)
-
-    def post(self, id=None):
-        try:
-            movement = Movement.query.filter(Movement.id == id).delete()
-            database.session.commit()
-        except:
-            pass
-        finally:
-            return redirect('/movements')
-
 
 class ReportView(MethodView):
 
-    def get(self):
-        reports = []
-        locations, products = Location.query.all(), Product.query.all()
-    
-        for location in locations:
-            for product in products:
-                data = {}
-                data["location"] = location.name
-                data["product"] = product.name
-                total_quantity = Movement.query.filter(
-                    Movement.destination_location_id==location.id,
-                    Movement.product_id==product.id).from_self(func.sum(Movement.quantity,)).all()
-                total_quantity = total_quantity[0][0]
-                if total_quantity == None:
-                    total_quantity = 0
-                data["quantity"] = total_quantity
-                reports.append(data)
+    def get(self, sort=False):
+
+        """
+            SELECT p.name as product, l.name as location, sum(m.quantity) as quantity
+            FROM movement m
+            INNER JOIN product p ON m.product_id = p.id
+            INNER JOIN location l ON m.destination_location_id  = l.id 
+            GROUP BY m.product_id, m.destination_location_id
+            ORDER BY m.timestamp desc;
+        """
+
+        reports = Movement.query.join(
+            Product, Movement.product_id == Product.id).join(
+                Location, Movement.destination_location_id  == Location.id).group_by(
+                    Movement.product_id, Movement.destination_location_id).add_columns(
+                        Product.name.label('product'), 
+                        Location.name.label('location'), 
+                        func.sum(Movement.quantity).label('quantity')
+                        ).all()
+
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
 
@@ -263,22 +274,18 @@ class Movement(database.Model):
     quantity = database.Column(database.String(255))
 
     def __repr__(self):
-        return '<Movement %r>' % self.id
+        return '<Movement %r>' % self.movement_id
 
 # END : Database ORM initialization
 
 database.create_all()
 app.add_url_rule('/products',view_func=ProductView.as_view('/products'))
-app.add_url_rule('/products/<string:id>/update',view_func=ProductUpdateView.as_view('/productsUpdate'))
-app.add_url_rule('/products/<string:id>/delete',view_func=ProductDestroyView.as_view('/productsDelete'))
 app.add_url_rule('/locations',view_func=LocationsView.as_view('/locations'))
-app.add_url_rule('/locations/<string:id>/update',view_func=LocationUpdateView.as_view('locationUpdate'))
-app.add_url_rule('/locations/<string:id>/delete',view_func=locationDestroyView.as_view('locationDelete'))
 app.add_url_rule('/movements',view_func=MovementView.as_view('movements'))
-app.add_url_rule('/movements/<string:id>/update',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
-app.add_url_rule('/movements/<string:id>/delete',view_func=MovementDestroyView.as_view('/MovementsDelete'))
 app.add_url_rule('/report',view_func=ReportView.as_view('report'))
-#app.run(debug=True, port=8888)
+app.add_url_rule('/products/<string:id>/<string:method>',view_func=ProductUpdateView.as_view('/productsUpdate'))
+app.add_url_rule('/locations/<string:id>/<string:method>',view_func=LocationUpdateView.as_view('locationUpdate'))
+app.add_url_rule('/movements/<string:movement_id>/<string:method>',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
 
 
 
