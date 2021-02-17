@@ -45,7 +45,7 @@
         <input type="submit" value="Add movement" class="form-control btn btn-success mt-3">
     </form>
 
-    {% if movements|length < 1%}
+    {% if data|length < 1%}
     <h4>Add Product Movements</h4>
     {% else %}
     <hr>
@@ -61,12 +61,12 @@
             <th>Quantity</th>
             <th>Action</th>
         </thead>
-        {% for movement in movements %}
+        {% for movement in data %}
         <tr>
             <!-- <td>{{movement.movement_id}}</td> -->
-            <td>{{movement.source_location.name}}</td>
-            <td>{{movement.destination_location.name}}</td>
-            <td>{{movement.product.name}}</td>
+            <td>{{movement.source_location}}</td>
+            <td>{{movement.destination_location}}</td>
+            <td>{{movement.product}}</td>
             <td>{{movement.quantity}}</td>
             <td>
                 <a href="/movements/{{movement.movement_id}}/update" class="btn btn-warning">Update</a>
