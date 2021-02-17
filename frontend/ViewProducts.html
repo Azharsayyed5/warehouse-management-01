@@ -20,6 +20,15 @@
     {%if products|length < 1%}
     <h4>No Products found please start by adding products above</h4>
     {% else %}
+
+    <form action="/search/product" method="get" class="form-inline">
+        <div class="form-group mx-sm-3 mb-2">
+          <label for="searchinput" class="sr-only">Search</label>
+          <input type="text" class="form-control" name="tag" id="searchinput" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Search</button>
+    </form>
+
     <table class="table">
         <thead class="thead-dark">
             <th>

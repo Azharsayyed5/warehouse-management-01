@@ -34,6 +34,19 @@ database = SQLAlchemy(app)
 def index():
     return render_template(app.config['HomeTemplate'])
 
+class SearchView(MethodView):
+    
+    def get(self, table):
+        search = request.args.get('tag', 'None')
+        search = "%{}%".format(search)
+        search = search.replace("+", " ")
+        if table == 'product':
+            product_list = Product.query.filter(Product.name.like(search)).all()
+            return render_template(app.config['ViewProductsTemplate'], products=product_list)
+        elif table == 'location':
+            location_list = Location.query.filter(Location.name.like(search)).all()
+            return render_template(app.config['ViewLocationsTemplate'], locations=location_list)
+
 class ProductView(MethodView):
 
     def get(self):
@@ -141,6 +154,9 @@ class MovementView(MethodView):
             LEFT JOIN location l2 ON m.source_location_id  = l2.id OR (m.source_location_id IS NULL)
             ORDER BY m.timestamp desc;
         """
+        products = Product.query.all()
+        locations = Location.query.all()
+
         Location1 = aliased(Location)
         Location2 = aliased(Location)
 
@@ -154,9 +170,12 @@ class MovementView(MethodView):
                         Location1.name.label('destination_location'), 
                         Movement.quantity.label('quantity')
                         ).all()
+        print(data)
         return render_template(
                 app.config['ViewMovementsTemplate'], 
-                data=data
+                data=data,
+                products=products,
+                locations=locations
             )
 
     def post(self):
@@ -216,9 +235,12 @@ class MovementUpdateView(MethodView):
         finally:
             return redirect('/movements')
 
+def Sort_Tuple(tup):
+    return(sorted(tup, key = lambda x: x[3]))  
+
 class ReportView(MethodView):
 
-    def get(self, sort=False):
+    def get(self):
 
         """
             SELECT p.name as product, l.name as location, sum(m.quantity) as quantity
@@ -229,15 +251,19 @@ class ReportView(MethodView):
             ORDER BY m.timestamp desc;
         """
 
+        sort = request.args.get('sort', 'false')
         reports = Movement.query.join(
             Product, Movement.product_id == Product.id).join(
                 Location, Movement.destination_location_id  == Location.id).group_by(
                     Movement.product_id, Movement.destination_location_id).add_columns(
                         Product.name.label('product'), 
-                        Location.name.label('location'), 
+                        Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
                         ).all()
-
+        print(reports)
+        if sort == 'true':
+            reports = Sort_Tuple(reports)
+        print(reports)
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
 
@@ -286,6 +312,7 @@ app.add_url_rule('/report',view_func=ReportView.as_view('report'))
 app.add_url_rule('/products/<string:id>/<string:method>',view_func=ProductUpdateView.as_view('/productsUpdate'))
 app.add_url_rule('/locations/<string:id>/<string:method>',view_func=LocationUpdateView.as_view('locationUpdate'))
 app.add_url_rule('/movements/<string:movement_id>/<string:method>',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
+app.add_url_rule('/search/<string:table>',view_func=SearchView.as_view('SearchView'))
 
 
 
