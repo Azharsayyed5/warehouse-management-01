@@ -31,7 +31,13 @@
           </li>
         </ul>
       </div>
-
+      {% block javascript %}
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+      <script type="text/javascript">
+          {% include "app.js" %}
+      </script>
+      <!-- The contents of myscript.js will be loaded inside the script tag -->
+  {% endblock %}
       {% block body %} {% endblock %}
       
 </body>

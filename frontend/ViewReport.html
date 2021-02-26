@@ -5,18 +5,33 @@
 {% block body %}
 <div class="container">
     <h2 class="text-center mt-3">
-        Movement Summary
+        Report Summary
     </h2>
     {%if report |length < 1%}
     <h4>No Report found please start by making movements</h4>
     {% else %}
     <!-- <button class="btn btn-primary" type="button"><a class="text-white hover:text-blue-300" href="/report?sort=true">Sort Ascending</a></button> -->
-    <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-secondary"><a class="text-white hover:text-blue-300" href="/report?sort=true">Sort Ascending</a></button>
-        <button type="button" class="btn btn-secondary"><a class="text-white hover:text-blue-300" href="/report?sort=false">Sort Descending</a></button>
+    <!-- <form action="/report?sort=asc&field={id}" method="get"> -->
+    <div class="form-check form-check-inline mt-4 mb-3">
+        <button type="button" class="btn btn-light" style="font-weight: bold;" disabled>Sort by</button>
+        <input class="form-check-input" type="radio" id="timestamp" value="option1">
+        <label class="form-check-label" for="inlineCheckbox1">Timestamp</label>
       </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="quantity" value="option2">
+        <label class="form-check-label" for="inlineCheckbox2">Quantity</label>
+      </div>
+    <!-- </br> -->
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-light" style="font-weight: bold;" disabled>Select order</button>
+        <button type="submit" class="btn btn-outline-primary" onclick="sendData('asc')">Ascending</button>
+        <button type="submit" class="btn btn-outline-primary" onclick="sendData('desc')">Descending</button>
+    </div>
+    
+    </br>
+    <input type="text" class="form-control" name="tag" id="myInput" onkeyup="searchFunction()" placeholder="Search for product, city or by quantity..." title="Type in a name">
 
-    <table class="table mt-3">
+    <table class="table mt-4" id="myTable">
         <thead class="thead-dark ">
             <th>
                 Product

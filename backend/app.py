@@ -235,9 +235,6 @@ class MovementUpdateView(MethodView):
         finally:
             return redirect('/movements')
 
-def Sort_Tuple(tup):
-    return(sorted(tup, key = lambda x: x[3]))  
-
 class ReportView(MethodView):
 
     def get(self):
@@ -251,19 +248,22 @@ class ReportView(MethodView):
             ORDER BY m.timestamp desc;
         """
 
-        sort = request.args.get('sort', 'false')
+        sort = request.args.get('sort', 'asc')
+        field = request.args.get('field', 'timestamp')
+        print(sort, field)
+        if sort == 'asc':
+            order = getattr(Movement, field).asc()
+        else:
+            order = getattr(Movement, field).desc()
         reports = Movement.query.join(
             Product, Movement.product_id == Product.id).join(
                 Location, Movement.destination_location_id  == Location.id).group_by(
                     Movement.product_id, Movement.destination_location_id).add_columns(
-                        Product.name.label('product'), 
+                        Product.name.label('product'),
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
-                        ).all()
-        print(reports)
-        if sort == 'true':
-            reports = Sort_Tuple(reports)
-        print(reports)
+                        ).order_by(order).all()
+
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
 
