@@ -7,9 +7,6 @@
     <h2 class="text-center mt-3">
         SUMMARY
     </h2>
-    {%if report |length < 1%}
-    <h4>No Report found please start by making movements</h4>
-    {% else %}
     <!-- <button class="btn btn-primary" type="button"><a class="text-white hover:text-blue-300" href="/report?sort=true">Sort Ascending</a></button> -->
     <!-- <form action="/report?sort=asc&field={id}" method="get"> -->
     <div class="form-check form-check-inline mt-4 mb-3">
@@ -32,6 +29,7 @@
     <input type="text" class="form-control" name="tag" id="myInput" onkeyup="searchFunction()" placeholder="Search for product, city or by quantity..." title="Type in a name">
     <table class="table mt-4" id="myTable">
         <thead class="thead-dark ">
+            <th>#</th>
             <th>
                 Product
             </th>
@@ -42,14 +40,46 @@
                 Quantity
             </th>
         </thead>
-        {% for rep in report  %}
+        {% for rep in report.items  %}
         <tr>
+            <th scope="row">{{ loop.index }}</th>
             <td>{{rep.product}}</td>
             <td>{{rep.location}}</td>
             <td>{{rep.quantity}}</td>
         </tr>
         {% endfor %}
-        {% endif %}
     </table>
+
+    
+<div class="text-right">
+    <a href="{{ url_for('report', page=report.prev_num) }}"
+       class="btn btn-outline-dark {% if report.page == 1 %}disabled{% endif %}">&laquo;
+    </a>
+    {% for page_num in report.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if page_num %}
+            {% if report.page == page_num %}
+            <a href="{{ url_for('report', page=page_num) }}"
+               class="btn btn-dark">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('report', page=page_num) }}"
+               class="btn btn-outline-dark">
+                {{ page_num }}
+            </a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+    <a href="{{ url_for('report', page=report.next_num) }}"
+       class="btn btn-outline-dark 
+       {% if report.page == report.pages %}disabled{% endif %}">
+        &raquo;
+    </a>
+</div>
+<p class="text-right mt-3">
+   Showing page {{ report.page }} of {{ report.pages }}
+</p>
 </div>
 {% endblock %}

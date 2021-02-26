@@ -246,6 +246,7 @@ class ReportView(MethodView):
             ORDER BY m.timestamp desc;
         """
 
+        page = request.args.get(get_page_parameter(), type=int, default=1)
         sort = request.args.get('sort', 'asc')
         field = request.args.get('field', 'timestamp')
 
@@ -261,23 +262,38 @@ class ReportView(MethodView):
                         Product.name.label('product'),
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
-                        ).order_by(order).all()
-        try:
-            global last_csv_created_at
-            current_minute = datetime.datetime.now().minute
-            if current_minute != last_csv_created_at:
-                last_csv_created_at = current_minute
-                print(f"CSV Created at {datetime.datetime.now()}")
-                df =pd.DataFrame(reports)
-                df.to_csv("reports/latest_report.csv", index=False)
-        except:
-            pass
+                        ).order_by(order).paginate(page=page, per_page=ROWS_PER_PAGE)
+        # try:
+        #     global last_csv_created_at
+        #     current_minute = datetime.datetime.now().minute
+        #     if current_minute != last_csv_created_at:
+        #         last_csv_created_at = current_minute
+        #         print(f"CSV Created at {datetime.datetime.now()}")
+        #         df =pd.DataFrame(reports)
+        #         df.to_csv("reports/latest_report.csv", index=False)
+        # except:
+        #     pass
 
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
 @app.route('/download_report/<string:filename>')
 def download_report(filename):
     try:
+        order = getattr(Movement, "timestamp").asc()
+        reports = Movement.query.join(
+            Product, Movement.product_id == Product.id).join(
+                Location, Movement.destination_location_id  == Location.id).group_by(
+                    Movement.product_id, Movement.destination_location_id).add_columns(
+                        Product.name.label('product'),
+                        Location.name.label('location'),
+                        func.sum(Movement.quantity).label('quantity')
+                        ).order_by(order).all()
+        print(reports)
+        try:
+            df =pd.DataFrame(reports)
+            df.to_csv("/reports/latest_report.csv", index=False)
+        except:
+            pass
         DOWNLOAD_DIRECTORY = 'reports'
         return send_from_directory(DOWNLOAD_DIRECTORY, filename, as_attachment=True)
     except:
