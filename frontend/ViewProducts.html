@@ -3,34 +3,26 @@
 {% block title %} Products {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container bg-light text-dark" style="height: 100vh;width: 400vh;">
     <h2 class="text-center mt-3">
         Products Management
     </h2>
     <form action="/products" method="post">
         <div class="form-group">
-            <label for="product-name">
+            <label for="product-name" style="font-weight: bold;">
                 Product Name
             </label>
             <input type="text" class="form-control" name="product-name" id="product-name">
-            <input type="submit" class="form-control btn btn-success mt-4" value="Add product">
+            <input type="submit" class="form-control btn btn-success mt-3" value="Add product">
         </div>
     </form>
     
-    {%if products|length < 1%}
-    <h4>No Products found please start by adding products above</h4>
-    {% else %}
 
-    <form action="/search/product" method="get" class="form-inline">
-        <div class="form-group mx-sm-3 mb-2">
-          <label for="searchinput" class="sr-only">Search</label>
-          <input type="text" class="form-control" name="tag" id="searchinput" placeholder="Search">
-        </div>
-        <button type="submit" class="btn btn-primary mb-2">Search</button>
-    </form>
+    <input type="text" class="form-control" name="tag" id="myInput" onkeyup="searchboxFunction()" placeholder="Search for product..." title="Type in a name">
 
-    <table class="table">
+    <table class="table mt-3" id="myTable">
         <thead class="thead-dark">
+            <th>#</th>
             <th>
                 PRODUCT NAME
             </th>
@@ -38,16 +30,47 @@
                 ACTION
             </th>
         </thead>
-        {% for product in products %}
+        {% for product in products.items %}
         <tr>
+            <th scope="row">{{ loop.index }}</th>
             <td>{{product.name}}</td>
             <td>
-                <a href="/products/{{product.id}}/update" class="btn btn-warning" >Update</a>
+                <a href="/products/{{product.id}}/update" class="btn btn-warning mr-3" >Update</a>
                 <a href="/products/{{product.id}}/delete" class="btn btn-danger">Delete</a>
             </td>
         </tr>
         {% endfor %}
-        {% endif %}
     </table>
+
+<div class="text-right">
+    <a href="{{ url_for('/products', page=products.prev_num) }}"
+       class="btn btn-outline-dark {% if products.page == 1 %}disabled{% endif %}">&laquo;
+    </a>
+    {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if page_num %}
+            {% if products.page == page_num %}
+            <a href="{{ url_for('/products', page=page_num) }}"
+               class="btn btn-dark">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('/products', page=page_num) }}"
+               class="btn btn-outline-dark">
+                {{ page_num }}
+            </a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+    <a href="{{ url_for('/products', page=products.next_num) }}"
+       class="btn btn-outline-dark 
+       {% if products.page == products.pages %}disabled{% endif %}">
+        &raquo;
+    </a>
+</div>
+<p class="text-right mt-3">
+   Showing page {{ products.page }} of {{ products.pages }}
+</p>
 </div>
 {% endblock %}

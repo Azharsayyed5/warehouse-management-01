@@ -3,33 +3,25 @@
 {% block title %} Locations {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container bg-light text-dark" style="height: 100vh;width: 400vh;">
     <h2 class="text-center mt-3">
         Warehouse Management
     </h2>
     <form action="/locations" method="post">
         <div class="form-group">
-            <label for="location-name">
+            <label for="location-name" style="font-weight: bold;">
                 Location Name
             </label>
             <input type="text" class="form-control" name="location-name" id="location-name">
-            <input type="submit" class="form-control btn btn-success mt-2" value="Add location">
+            <input type="submit" class="form-control btn btn-success mt-3" value="Add location">
         </div>
-    </form>
-    {%if locations|length < 1%}
-    <h4>No locations found please start by adding locations above</h4>
-    {% else %}
-    
-    <form action="/search/location" method="get" class="form-inline">
-        <div class="form-group mx-sm-3 mb-2">
-          <label for="searchinput" class="sr-only">Search</label>
-          <input type="text" class="form-control" name="tag" id="searchinput" placeholder="Search">
-        </div>
-        <button type="submit" class="btn btn-primary mb-2">Search</button>
     </form>
 
-    <table class="table">
+    <input type="text" class="form-control" name="tag" id="myInput" onkeyup="searchboxFunction()" placeholder="Search for product, city or by quantity..." title="Type in a name">
+
+    <table class="table mt-3" id="myTable">
         <thead class="thead-dark">
+            <th>#</th>
             <th>
                 WAREHOUSE
             </th>
@@ -37,16 +29,46 @@
                 ACTIONS
             </th>
         </thead>
-        {% for location in locations %}
+        {% for location in locations.items %}
         <tr>
+            <th scope="row">{{ loop.index }}</th>
             <td>{{location.name}}</td>
             <td>
-                <a href="/locations/{{location.id}}/update" class="btn btn-warning">Update</a>
+                <a href="/locations/{{location.id}}/update" class="btn btn-warning mr-3">Update</a>
                 <a href="/locations/{{location.id}}/delete" class="btn btn-danger">Delete</a>
             </td>
         </tr>
         {% endfor %}
-        {% endif %}
     </table>
+    <div class="text-right">
+        <a href="{{ url_for('/locations', page=locations.prev_num) }}"
+           class="btn btn-outline-dark {% if locations.page == 1 %}disabled{% endif %}">&laquo;
+        </a>
+        {% for page_num in locations.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+                {% if locations.page == page_num %}
+                <a href="{{ url_for('/locations', page=page_num) }}"
+                   class="btn btn-dark">
+                    {{ page_num }}
+                </a>
+                {% else %}
+                <a href="{{ url_for('/locations', page=page_num) }}"
+                   class="btn btn-outline-dark">
+                    {{ page_num }}
+                </a>
+                {% endif %}
+            {% else %}
+                ...
+            {% endif %}
+        {% endfor %}
+        <a href="{{ url_for('/locations', page=locations.next_num) }}"
+           class="btn btn-outline-dark 
+           {% if locations.page == locations.pages %}disabled{% endif %}">
+            &raquo;
+        </a>
+    </div>
+    <p class="text-right mt-3">
+       Showing page {{ locations.page }} of {{ locations.pages }}
+    </p>
 </div>
 {% endblock %}

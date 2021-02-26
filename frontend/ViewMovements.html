@@ -3,14 +3,14 @@
 {% block title %} Movements {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container bg-light text-dark" style="height: 100vh;width: 400vh;">
     <h2 class="text-center mt-3">
         Movements Management
     </h2>
     <form action="/movements" method="post">
         <div class="row mt-3">
             <div class="form-group col">
-                <label for="product">Product</label>
+                <label for="product" style="font-weight: bold;">Product</label>
                 <select name="product" id="product" class="form-control">
                     {% for product in products %}
                     <option value="{{ product.id }}">{{product.name}}</option>
@@ -18,13 +18,13 @@
                 </select>
             </div>
             <div class="form-group col">
-                <label for="quantity">Quantity</label>
+                <label for="quantity" style="font-weight: bold;">Quantity</label>
                 <input type="number" name="quantity" id="quantity" class="form-control" min="1">
             </div>
         </div>
         <div class="row mt-3">
             <div class="form-group col">
-                <label for="source-location">From location:</label>
+                <label for="source-location" style="font-weight: bold;">From location:</label>
                 <select name="source-location" id="source-location" class="form-control">
                     <option value="none">None</option>
                     {% for location in locations %}
@@ -33,7 +33,7 @@
                 </select>
             </div>
             <div class="form-group col">
-                <label for="destination-location">To location:</label>
+                <label for="destination-location" style="font-weight: bold;">To location:</label>
                 <select name="destination-location" id="destination-location" class="form-control">
                     <option value="none">None</option>
                     {% for location in locations %}
@@ -42,39 +42,69 @@
                 </select>
             </div>
         </div>
-        <input type="submit" value="Add movement" class="form-control btn btn-success mt-3">
+        <input type="submit" value="Add movement" class="form-control btn btn-success mt-2 mb-2">
     </form>
 
-    {% if data|length < 1%}
-    <h4>Add Product Movements</h4>
-    {% else %}
     <hr>
     <h2>
         Movements Summary
     </h2>
-    <table class="table mt-4">
+
+    <input type="text" class="form-control mt-3" name="tag" id="myInput" onkeyup="searchFunction()" placeholder="Search for product, city or by quantity..." title="Type in a name">
+
+    <table class="table mt-4" id="myTable">
         <thead class="thead-dark mt-4">
-            <!-- <th>ID</th> -->
+            <th>#</th>
             <th>From</th>
             <th>To</th>
             <th>Product</th>
             <th>Quantity</th>
             <th>Action</th>
         </thead>
-        {% for movement in data %}
+        {% for movement in data.items %}
         <tr>
-            <!-- <td>{{movement.movement_id}}</td> -->
+            <th scope="row">{{ loop.index }}</th>
             <td>{{movement.source_location}}</td>
             <td>{{movement.destination_location}}</td>
             <td>{{movement.product}}</td>
             <td>{{movement.quantity}}</td>
             <td>
-                <a href="/movements/{{movement.movement_id}}/update" class="btn btn-warning">Update</a>
+                <a href="/movements/{{movement.movement_id}}/update" class="btn btn-warning  mr-3">Update</a>
                 <a href="/movements/{{movement.movement_id}}/delete" class="btn btn-danger">Delete</a>
             </td>
         </tr>
         {% endfor %}
     </table>
-    {% endif %}
+    
+<div class="text-right">
+    <a href="{{ url_for('movements', page=data.prev_num) }}"
+       class="btn btn-outline-dark {% if data.page == 1 %}disabled{% endif %}">&laquo;
+    </a>
+    {% for page_num in data.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if page_num %}
+            {% if data.page == page_num %}
+            <a href="{{ url_for('movements', page=page_num) }}"
+               class="btn btn-dark">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('movements', page=page_num) }}"
+               class="btn btn-outline-dark">
+                {{ page_num }}
+            </a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+    <a href="{{ url_for('movements', page=data.next_num) }}"
+       class="btn btn-outline-dark 
+       {% if data.page == data.pages %}disabled{% endif %}">
+        &raquo;
+    </a>
+</div>
+<p class="text-right mt-3">
+   Showing page {{ data.page }} of {{ data.pages }}
+</p>
 </div>
 {%endblock%}

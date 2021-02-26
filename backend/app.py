@@ -1,14 +1,16 @@
 from flask import Flask
-from flask import Flask,request,redirect,render_template
+from flask import Flask,request,redirect,render_template, send_from_directory, send_file
 from flask.views import MethodView
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql.functions import func
 from sqlalchemy.orm import aliased
-from datetime import datetime
+from flask_paginate import Pagination, get_page_parameter
+import datetime
 import uuid
+import pandas as pd
 from werkzeug.security import check_password_hash, generate_password_hash
 
-app = Flask(__name__, template_folder="../frontend/")
+app = Flask(__name__, template_folder="../frontend/", static_folder='reports')
 
 # Set up the SQLAlchemy Database to be a local file 'desserts.database'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehouse.db'
@@ -34,24 +36,17 @@ database = SQLAlchemy(app)
 def index():
     return render_template(app.config['HomeTemplate'])
 
-class SearchView(MethodView):
-    
-    def get(self, table):
-        search = request.args.get('tag', 'None')
-        search = "%{}%".format(search)
-        search = search.replace("+", " ")
-        if table == 'product':
-            product_list = Product.query.filter(Product.name.like(search)).all()
-            return render_template(app.config['ViewProductsTemplate'], products=product_list)
-        elif table == 'location':
-            location_list = Location.query.filter(Location.name.like(search)).all()
-            return render_template(app.config['ViewLocationsTemplate'], locations=location_list)
+ROWS_PER_PAGE = 5
 
 class ProductView(MethodView):
 
     def get(self):
-        product_list = Product.query.all()
-        return render_template(app.config['ViewProductsTemplate'], products=product_list)
+
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+        product_list = Product.query.paginate(page=page, per_page=ROWS_PER_PAGE)
+        return render_template(
+            app.config['ViewProductsTemplate'], products=product_list
+            )
 
     def post(self):
         try:
@@ -63,7 +58,6 @@ class ProductView(MethodView):
             pass
         finally:
             return redirect('/products')
-
 
 class ProductUpdateView(MethodView):
     
@@ -97,7 +91,8 @@ class ProductUpdateView(MethodView):
 class LocationsView(MethodView):
 
     def get(self):
-        location_list = Location.query.all()
+        page = request.args.get(get_page_parameter(), type=int, default=1)
+        location_list = Location.query.paginate(page=page, per_page=ROWS_PER_PAGE)
         return render_template(app.config['ViewLocationsTemplate'], locations=location_list)
 
     def post(self):
@@ -160,6 +155,7 @@ class MovementView(MethodView):
         Location1 = aliased(Location)
         Location2 = aliased(Location)
 
+        page = request.args.get(get_page_parameter(), type=int, default=1)
         data = Movement.query.join(
             Product, Movement.product_id == Product.id, isouter=True).join(
                 Location1, Movement.destination_location_id  == Location1.id, isouter=True).join(
@@ -169,7 +165,7 @@ class MovementView(MethodView):
                         Location2.name.label('source_location'),  
                         Location1.name.label('destination_location'), 
                         Movement.quantity.label('quantity')
-                        ).all()
+                        ).paginate(page=page, per_page=ROWS_PER_PAGE)
         print(data)
         return render_template(
                 app.config['ViewMovementsTemplate'], 
@@ -235,6 +231,8 @@ class MovementUpdateView(MethodView):
         finally:
             return redirect('/movements')
 
+last_csv_created_at = None
+
 class ReportView(MethodView):
 
     def get(self):
@@ -250,11 +248,12 @@ class ReportView(MethodView):
 
         sort = request.args.get('sort', 'asc')
         field = request.args.get('field', 'timestamp')
-        print(sort, field)
+
         if sort == 'asc':
             order = getattr(Movement, field).asc()
         else:
             order = getattr(Movement, field).desc()
+
         reports = Movement.query.join(
             Product, Movement.product_id == Product.id).join(
                 Location, Movement.destination_location_id  == Location.id).group_by(
@@ -263,9 +262,26 @@ class ReportView(MethodView):
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
                         ).order_by(order).all()
+        try:
+            global last_csv_created_at
+            current_minute = datetime.datetime.now().minute
+            if current_minute != last_csv_created_at:
+                last_csv_created_at = current_minute
+                print(f"CSV Created at {datetime.datetime.now()}")
+                df =pd.DataFrame(reports)
+                df.to_csv("reports/latest_report.csv", index=False)
+        except:
+            pass
 
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
+@app.route('/download_report/<string:filename>')
+def download_report(filename):
+    try:
+        DOWNLOAD_DIRECTORY = 'reports'
+        return send_from_directory(DOWNLOAD_DIRECTORY, filename, as_attachment=True)
+    except:
+        "Not Found"
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -312,8 +328,6 @@ app.add_url_rule('/report',view_func=ReportView.as_view('report'))
 app.add_url_rule('/products/<string:id>/<string:method>',view_func=ProductUpdateView.as_view('/productsUpdate'))
 app.add_url_rule('/locations/<string:id>/<string:method>',view_func=LocationUpdateView.as_view('locationUpdate'))
 app.add_url_rule('/movements/<string:movement_id>/<string:method>',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
-app.add_url_rule('/search/<string:table>',view_func=SearchView.as_view('SearchView'))
-
 
 
 

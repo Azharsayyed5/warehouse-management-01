@@ -3,9 +3,9 @@
 {% block title %} Movement report {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container bg-light text-dark" style="height: 100vh;width: 400vh;">
     <h2 class="text-center mt-3">
-        Report Summary
+        SUMMARY
     </h2>
     {%if report |length < 1%}
     <h4>No Report found please start by making movements</h4>
@@ -26,11 +26,10 @@
         <button type="button" class="btn btn-light" style="font-weight: bold;" disabled>Select order</button>
         <button type="submit" class="btn btn-outline-primary" onclick="sendData('asc')">Ascending</button>
         <button type="submit" class="btn btn-outline-primary" onclick="sendData('desc')">Descending</button>
+        
     </div>
-    
-    </br>
+    <button type="button" class="btn btn-primary float-right"><a href="/download_report/latest_report.csv" style="color: white;">Download Report</a></button>
     <input type="text" class="form-control" name="tag" id="myInput" onkeyup="searchFunction()" placeholder="Search for product, city or by quantity..." title="Type in a name">
-
     <table class="table mt-4" id="myTable">
         <thead class="thead-dark ">
             <th>
