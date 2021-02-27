@@ -1,0 +1,82 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warehouse Management Signup</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/1.4.6/tailwind.min.css" />
+  </head>
+  <body class="bg-Gray-800">
+    <!-- Login Form -->
+    <div class="md:container md:mx-auto">
+      <div class="max-w-sm mx-auto my-5 bg-white px-5 py-10 rounded shadow-xl">
+        <div class="text-center mb-8">
+          <h1 class="font-bold text-2xl text-green-400" style="font-style: italic;">Signup</h1>
+          <h1 class="font-bold text-2xl font-bold">Warehouse Management</h1>
+
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <div class="text-white px-6 py-4 border-0 rounded relative mb-4 bg-red-500">
+            <span class="text-xl inline-block mr-5 align-middle">
+              <i class="fas fa-bell" />
+            </span>
+            <span class="inline-block align-middle mr-8">
+              <b class="capitalize">Error!</b> {{ messages[0] }}.  <a href="{{ url_for('login') }}">login page</a>.
+            </span>
+            <button class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none">
+              <span>×</span>
+            </button>
+          </div>
+          {% endif %}
+          {% endwith %}
+
+        </div>
+        <form method="POST" action="/signup">
+          <div class="mt-5">
+            <label for="username">Email</label>
+            <input
+              type="text"
+              id="username"
+              name="email"
+              placeholder="Your Email Address"
+              class="block w-full p-2 border rounded border-gray-500"
+            />
+          </div>
+          <div class="mt-5">
+            <label for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Your Full Name"
+              class="block w-full p-2 border rounded border-gray-500"
+            />
+          </div>
+          <div class="mt-5">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="******"
+              class="block w-full p-2 border rounded border-gray-500"
+            />
+          </div>
+          <div class="mt-10">
+            <input
+              type="submit"
+              value="Signup"
+              class="py-3 bg-green-500 hover:bg-green-600 rounded text-white text-center w-full"
+            />
+          </div>
+          <div class="mt-2">
+          <button 
+          class="py-3 bg-green-900 hover:bg-green-600 rounded text-white text-center w-full" 
+          type="button" style="transition: all .15s ease">
+           <a href="/login"> Already a user, login here!</a>
+          </button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,7 +1,8 @@
 from flask import Flask
-from flask import Flask,request,redirect,render_template, send_from_directory, send_file
+from flask import Flask,request,redirect,render_template, send_from_directory, send_file, redirect, url_for, request, flash
 from flask.views import MethodView
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin, login_required, current_user, login_user, logout_user, login_required, LoginManager
 from sqlalchemy.sql.functions import func
 from sqlalchemy.orm import aliased
 from flask_paginate import Pagination, get_page_parameter
@@ -14,6 +15,7 @@ app = Flask(__name__, template_folder="../frontend/", static_folder='reports')
 
 # Set up the SQLAlchemy Database to be a local file 'desserts.database'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehouse.db'
+app.config['SECRET_KEY'] = 'randomKey'
 
 # Initialize templates
 app.config['HomeTemplate'] = "Home.html"
@@ -27,19 +29,26 @@ app.config['ViewMovementsTemplate'] = "ViewMovements.html"
 app.config['ViewReportTemplate'] = "ViewReport.html"
 app.config['UpdateMovementTemplate'] = "UpdateMovement.html"
 app.config['DeleteMovementTemplate'] = "DeleteMovement.html"
+app.config['LoginTemplate'] = "login.html"
+app.config['SignupTemplate'] = "signup.html"
 
 # Set SQLALCHEMY_TRACK_MODIFICATIONS to False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 database = SQLAlchemy(app)
 
-@app.route('/')
-def index():
-    return render_template(app.config['HomeTemplate'])
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 ROWS_PER_PAGE = 5
 
 class ProductView(MethodView):
 
+    @login_required
     def get(self):
 
         page = request.args.get(get_page_parameter(), type=int, default=1)
@@ -48,6 +57,7 @@ class ProductView(MethodView):
             app.config['ViewProductsTemplate'], products=product_list
             )
 
+    @login_required
     def post(self):
         try:
             product_detail = request.form["product-name"]
@@ -61,6 +71,7 @@ class ProductView(MethodView):
 
 class ProductUpdateView(MethodView):
     
+    @login_required
     def get(self, id=None,  method=None):
         product_detail = Product.query.get_or_404(id)
         if method == 'update':
@@ -70,6 +81,7 @@ class ProductUpdateView(MethodView):
         else:
             return 'Wrong method'
 
+    @login_required
     def post(self, id=None, method=None):
         try:
             product = Product.query.get_or_404(id)
@@ -90,11 +102,13 @@ class ProductUpdateView(MethodView):
 
 class LocationsView(MethodView):
 
+    @login_required
     def get(self):
         page = request.args.get(get_page_parameter(), type=int, default=1)
         location_list = Location.query.paginate(page=page, per_page=ROWS_PER_PAGE)
         return render_template(app.config['ViewLocationsTemplate'], locations=location_list)
 
+    @login_required
     def post(self):
         try:
             location = request.form["location-name"]
@@ -108,6 +122,7 @@ class LocationsView(MethodView):
 
 class LocationUpdateView(MethodView):
 
+    @login_required
     def get(self, id=None, method=None):
         location_detail = Location.query.get_or_404(id)
         if method == 'update':
@@ -117,7 +132,7 @@ class LocationUpdateView(MethodView):
         else:
             return 'Wrong method'
         
-
+    @login_required
     def post(self, id=None, method=None):
         try:
             location = Location.query.get_or_404(id)
@@ -139,6 +154,7 @@ class LocationUpdateView(MethodView):
 
 class MovementView(MethodView):
     
+    @login_required
     def get(self):
 
         """
@@ -174,6 +190,7 @@ class MovementView(MethodView):
                 locations=locations
             )
 
+    @login_required
     def post(self):
         try:
             destination_location = request.form['destination-location']
@@ -193,6 +210,7 @@ class MovementView(MethodView):
 
 class MovementUpdateView(MethodView):
     
+    @login_required
     def get(self, movement_id=None, method=None):
         if method == 'update':
             product_list, locations_list, movements_list = Product.query.all(), Location.query.all(),  Movement.query.all()
@@ -208,6 +226,7 @@ class MovementUpdateView(MethodView):
         else:
             return "wrong method"
 
+    @login_required
     def post(self, movement_id=None, method=None):
         try:
             if method == 'update':
@@ -235,6 +254,7 @@ last_csv_created_at = None
 
 class ReportView(MethodView):
 
+    @login_required
     def get(self):
 
         """
@@ -276,10 +296,16 @@ class ReportView(MethodView):
 
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
+class HomeView(MethodView):
+    
+    @login_required
+    def get(self):
+        return render_template(app.config['HomeTemplate'])
+
 @app.route('/download_report/<string:filename>')
+@login_required
 def download_report(filename):
     try:
-        order = getattr(Movement, "timestamp").asc()
         reports = Movement.query.join(
             Product, Movement.product_id == Product.id).join(
                 Location, Movement.destination_location_id  == Location.id).group_by(
@@ -287,17 +313,61 @@ def download_report(filename):
                         Product.name.label('product'),
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
-                        ).order_by(order).all()
-        print(reports)
+                        ).all()
         try:
             df =pd.DataFrame(reports)
-            df.to_csv("/reports/latest_report.csv", index=False)
+            df.to_csv("reports/latest_report.csv", index=False)
         except:
             pass
         DOWNLOAD_DIRECTORY = 'reports'
-        return send_from_directory(DOWNLOAD_DIRECTORY, filename, as_attachment=True)
+        return send_file("reports/latest_report.csv", as_attachment=True)
     except:
         "Not Found"
+
+@app.route('/login')
+def login():
+    return render_template(app.config['LoginTemplate'])
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
+    user = User.query.filter_by(email=email).first()
+    if not user or not check_password_hash(user.password, password): 
+        flash('Please check your login details and try again.')
+        return redirect(url_for('login'))
+    login_user(user, remember=remember)
+    return redirect(url_for('home'))
+
+@app.route('/signup')
+def signup():
+    return render_template(app.config['SignupTemplate'])
+
+@app.route('/signup', methods=['POST'])
+def signup_post():
+
+    email = request.form.get('email')
+    name = request.form.get('name')
+    password = request.form.get('password')
+    user = User.query.filter_by(email=email).first()
+    if user: 
+        flash('Email address already exists')
+        return redirect(url_for('signup'))
+    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+    database.session.add(new_user)
+    database.session.commit()
+    return redirect(url_for('login'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -334,6 +404,15 @@ class Movement(database.Model):
     def __repr__(self):
         return '<Movement %r>' % self.movement_id
 
+class User(UserMixin, database.Model):
+    id = database.Column(database.String(255), primary_key=True, default=generate_uuid)
+    email = database.Column(database.String(100), unique=True)
+    password = database.Column(database.String(100))
+    name = database.Column(database.String(1000))
+
+    def __repr__(self):
+        return '<id %r>' % self.id
+
 # END : Database ORM initialization
 
 database.create_all()
@@ -341,7 +420,8 @@ app.add_url_rule('/products',view_func=ProductView.as_view('/products'))
 app.add_url_rule('/locations',view_func=LocationsView.as_view('/locations'))
 app.add_url_rule('/movements',view_func=MovementView.as_view('movements'))
 app.add_url_rule('/report',view_func=ReportView.as_view('report'))
-app.add_url_rule('/products/<string:id>/<string:method>',view_func=ProductUpdateView.as_view('/productsUpdate'))
+app.add_url_rule('/home',view_func=HomeView.as_view('home'))
+app.add_url_rule('/products/<string:id>/<string:method>',view_func=ProductUpdateView.as_view('productsUpdate'))
 app.add_url_rule('/locations/<string:id>/<string:method>',view_func=LocationUpdateView.as_view('locationUpdate'))
 app.add_url_rule('/movements/<string:movement_id>/<string:method>',view_func=MovementUpdateView.as_view('/MovementsUpdate'))
 
