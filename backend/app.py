@@ -15,7 +15,7 @@ app = Flask(__name__, template_folder="../frontend/", static_folder='reports')
 
 # Set up the SQLAlchemy Database to be a local file 'desserts.database'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///warehouse.db'
-app.config['SECRET_KEY'] = 'randomKey'
+app.config['SECRET_KEY'] = '11eb94390242ac130002 '
 
 # Initialize templates
 app.config['HomeTemplate'] = "Home.html"
