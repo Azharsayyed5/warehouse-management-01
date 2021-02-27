@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import Flask,request,redirect,render_template, send_from_directory, send_file, redirect, url_for, request, flash
+from flask import Flask,request,redirect,render_template, session, send_file, redirect, url_for, request, flash
 from flask.views import MethodView
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_required, current_user, login_user, logout_user, login_required, LoginManager
@@ -338,6 +338,7 @@ def login_post():
         flash('Please check your login details and try again.')
         return redirect(url_for('login'))
     login_user(user, remember=remember)
+    session['logged_in'] = True
     return redirect(url_for('home'))
 
 @app.route('/signup')
@@ -367,6 +368,8 @@ def logout():
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     return redirect(url_for('login'))
 
 def generate_uuid():
