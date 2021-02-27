@@ -31,7 +31,7 @@ Screenshots
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/report1.png)
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/report2.png)
 - Product, Warehouse, Movement Update/Delete Page
-![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/productupdatd.png)
+![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/productupdate.png)
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/warehouseupdate.png)
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/movementupdate.png)
 ![image](https://github.com/Azharsayyed5/Warehouse-Management/blob/main/screenshot/warehousedelete.png)
