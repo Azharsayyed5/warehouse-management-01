@@ -283,16 +283,6 @@ class ReportView(MethodView):
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
                         ).order_by(order).paginate(page=page, per_page=ROWS_PER_PAGE)
-        # try:
-        #     global last_csv_created_at
-        #     current_minute = datetime.datetime.now().minute
-        #     if current_minute != last_csv_created_at:
-        #         last_csv_created_at = current_minute
-        #         print(f"CSV Created at {datetime.datetime.now()}")
-        #         df =pd.DataFrame(reports)
-        #         df.to_csv("reports/latest_report.csv", index=False)
-        # except:
-        #     pass
 
         return render_template(app.config['ViewReportTemplate'], report=reports)
 
