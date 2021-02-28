@@ -1,0 +1,11 @@
+Movement,product,location,quantity
+<Movement '6126ffab-1684-494a-97e0-9517f3549ff9'>,Product 003,Mumbai,4
+<Movement 'f88bbdcd-9310-4127-9258-44bf49d8dac7'>,Product 003,Delhi,4
+<Movement 'd9cc978f-0d87-4eca-a748-237480192795'>,Product 001,Thane,5
+<Movement '4fec0179-e45e-4605-bcd0-4dd528ea0d8f'>,Product 001,Mumbai,5
+<Movement '323d96d5-e265-4871-9df7-8d9278812aba'>,Product 001,Nasik,6
+<Movement '0d27dafc-b0aa-4dff-bae3-729b7fe713c6'>,Product 001,Pune,5
+<Movement '4fa65df2-dc21-44b9-ba8c-736cab92adc5'>,Product 006,Pune,7
+<Movement 'f8b5cf43-d3a2-43b0-9e8c-43fb0e47dd0f'>,Product 006,Navi Mumbai ,7
+<Movement 'b8f18bbc-dcef-46ba-a8f2-99b05a6566bf'>,Product 005,Mumbai,8
+<Movement '15ee1864-0c39-4dd0-9eef-88908e067332'>,Product 004,Thane,4

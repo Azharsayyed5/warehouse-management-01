@@ -88,3 +88,11 @@ function DownloadFile(){
   console.log("Downloading File")
   location.href = "/download_report/" + uuidv4() + ".csv";
 }
+
+function closeAlert(event){
+  let element = event.target;
+  while(element.nodeName !== "BUTTON"){
+    element = element.parentNode;
+  }
+  element.parentNode.parentNode.removeChild(element.parentNode);
+}

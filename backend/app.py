@@ -61,6 +61,9 @@ class ProductView(MethodView):
     def post(self):
         try:
             product_detail = request.form["product-name"]
+            if not product_detail or product_detail == "":
+                flash('Please enter a valid product name.')
+                return redirect(url_for('products'))
             new_product = Product(name=product_detail)
             database.session.add(new_product)
             database.session.commit()
@@ -112,6 +115,9 @@ class LocationsView(MethodView):
     def post(self):
         try:
             location = request.form["location-name"]
+            if not location or location == "":
+                flash('Please enter a valid location name.')
+                return redirect(url_for('locations'))
             new_location = Location(name=location)
             database.session.add(new_location)
             database.session.commit()  
@@ -197,6 +203,9 @@ class MovementView(MethodView):
             source_location = request.form['source-location']
             product = request.form['product']
             quantity = request.form['quantity']
+            if "none" in (destination_location, source_location, quantity):
+                flash('Please enter all the field properly.')
+                return redirect(url_for('movements'))
             add_movement = Movement(
                 destination_location_id=destination_location, source_location_id=source_location, 
                 product_id=product, quantity=quantity
@@ -229,24 +238,23 @@ class MovementUpdateView(MethodView):
     @login_required
     def post(self, movement_id=None, method=None):
         try:
+            movement = Movement.query.get_or_404(movement_id)
             if method == 'update':
-                Movement = Movement.query.get_or_404(movement_id)
-                if Movement:
-                    Movement.destination_location = request.form['destination-location']
-                    Movement.source_location = request.form['source-location']
-                    Movement.product = request.form['product']
-                    Movement.quantity = request.form['quantity']
+                if movement:
+                    movement.destination_location = request.form['destination-location']
+                    movement.source_location = request.form['source-location']
+                    movement.product = request.form['product']
+                    movement.quantity = request.form['quantity']
                     database.session.commit()
             elif method == 'delete':
-                movement = Movement.query.get_or_404(movement_id)
                 movement.movement_id = movement_id
                 if movement:
                     database.session.delete(movement)
                     database.session.commit()
             else:
                 return "wrong method"
-        except:
-            pass
+        except Exception as exc:
+            print(exc)
         finally:
             return redirect('/movements')
 
