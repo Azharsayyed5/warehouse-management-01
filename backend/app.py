@@ -306,11 +306,10 @@ def download_report(filename):
                         ).all()
         try:
             df =pd.DataFrame(reports)
-            df.to_csv("reports/latest_report.csv", index=False)
+            df.to_csv(f"reports/latest_report_{filename}", index=False)
         except:
             pass
-        DOWNLOAD_DIRECTORY = 'reports'
-        return send_file("reports/latest_report.csv", as_attachment=True)
+        return send_file(f"reports/latest_report_{filename}", as_attachment=True)
     except:
         "Not Found"
 
