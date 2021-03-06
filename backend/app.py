@@ -8,7 +8,7 @@ from sqlalchemy.orm import aliased
 from flask_paginate import Pagination, get_page_parameter
 import datetime
 import uuid
-import pandas as pd
+# import pandas as pd
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__, template_folder="../frontend/", static_folder='reports')
@@ -312,11 +312,11 @@ def download_report(filename):
                         Location.name.label('location'),
                         func.sum(Movement.quantity).label('quantity')
                         ).all()
-        try:
-            df =pd.DataFrame(reports)
-            df.to_csv(f"reports/latest_report_{filename}", index=False)
-        except:
-            pass
+        # try:
+        #     df =pd.DataFrame(reports)
+        #     df.to_csv(f"reports/latest_report_{filename}", index=False)
+        # except:
+        #     pass
         return send_file(f"reports/latest_report_{filename}", as_attachment=True)
     except:
         "Not Found"
